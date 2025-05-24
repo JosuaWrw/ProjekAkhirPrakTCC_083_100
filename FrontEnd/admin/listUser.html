@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kelola User - Admin Panel</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #00b894 0%, #00cec9 100%);
+            min-height: 100vh;
+        }
+
+        .navbar {
+            background: rgba(255, 255, 255, 0.95) !important;
+            backdrop-filter: blur(10px);
+        }
+
+        .main-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            margin: 2rem 0;
+            overflow: hidden;
+        }
+
+        .table-container {
+            padding: 2rem;
+        }
+
+        .action-buttons .button {
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 3rem;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #666;
+        }
+
+        .modal-card {
+            width: 90%;
+            max-width: 600px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .form-grid .field.is-full {
+            grid-column: 1 / -1;
+        }
+
+        .user-role {
+            font-weight: bold;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+        }
+
+        .role-admin {
+            background-color: #e74c3c;
+            color: white;
+        }
+
+        .role-user {
+            background-color: #3498db;
+            color: white;
+        }
+
+        @media screen and (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .table-container {
+                overflow-x: auto;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navbar -->
+    <nav class="navbar is-light" role="navigation">
+        <div class="navbar-brand">
+            <a class="navbar-item" href="../indexAdmin.html" style="font-weight: bold; font-size: 1.2rem;">
+                <i class="fas fa-users-cog" style="margin-right: 10px; color: #667eea;"></i>
+                Admin Panel
+            </a>
+        </div>
+
+        <div class="navbar-menu">
+            <div class="navbar-start">
+                <a class="navbar-item" href="indexAdmin.html">
+                    <i class="fas fa-home"></i>
+                    Dashboard
+                </a>
+                <a class="navbar-item is-active" href="listUser.html">
+                    <i class="fas fa-users"></i>
+                    User
+                </a>
+                <a class="navbar-item" href="listMobil.html">
+                    <i class="fas fa-car"></i>
+                    Mobil
+                </a>
+                <a class="navbar-item" href="listTransaksi.html">
+                    <i class="fas fa-receipt"></i>
+                    Transaksi
+                </a>
+            </div>
+            <div class="navbar-end">
+                <div class="navbar-item">
+                    <span id="adminGreeting" class="has-text-weight-bold"></span>
+                </div>
+                <div class="navbar-item">
+                    <button class="button is-light" id="logoutBtn">
+                        <i class="fas fa-sign-out-alt"></i>
+                        Logout
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <section class="section">
+        <div class="container">
+            <div class="main-container">
+                <!-- Header -->
+                <div class="hero is-primary">
+                    <div class="hero-body">
+                        <div class="level">
+                            <div class="level-left">
+                                <div>
+                                    <h1 class="title is-2">
+                                        <i class="fas fa-users"></i>
+                                        Kelola User
+                                    </h1>
+                                    <p class="subtitle">Manage user accounts and permissions</p>
+                                </div>
+                            </div>
+                            <div class="level-right">
+                                <button class="button is-white is-outlined" onclick="openAddModal()">
+                                    <i class="fas fa-plus"></i>
+                                    <span>Tambah User</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Search and Filter -->
+                <div class="table-container">
+                    <div class="level">
+                        <div class="level-left">
+                            <div class="field has-addons">
+                                <div class="control">
+                                    <input class="input" type="text" id="searchInput" placeholder="Cari user...">
+                                </div>
+                                <div class="control">
+                                    <button class="button is-info" onclick="searchUsers()">
+                                        <i class="fas fa-search"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="level-right">
+                            <div class="field">
+                                <div class="control">
+                                    <div class="select">
+                                        <select id="roleFilter" onchange="filterByRole()">
+                                            <option value="">Semua Role</option>
+                                            <option value="admin">Admin</option>
+                                            <option value="user">User</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Loading State -->
+                    <div id="loadingState" class="loading">
+                        <div class="has-text-centered">
+                            <i class="fas fa-spinner fa-spin fa-3x" style="color: #667eea;"></i>
+                            <p class="title is-4" style="margin-top: 1rem;">Memuat data user...</p>
+                        </div>
+                    </div>
+
+                    <!-- Empty State -->
+                    <div id="emptyState" class="empty-state" style="display: none;">
+                        <div class="has-text-centered">
+                            <i class="fas fa-users-slash fa-4x" style="color: #ddd;"></i>
+                            <h3 class="title is-4">Tidak ada user ditemukan</h3>
+                            <p class="subtitle">Silakan tambah user baru atau ubah filter pencarian</p>
+                        </div>
+                    </div>
+
+                    <!-- Users Table -->
+                    <div id="usersTable" style="display: none;">
+                        <div class="table-container">
+                            <table class="table is-fullwidth is-striped is-hoverable">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Nama</th>
+                                        <th>Email</th>
+                                        <th>No. Telepon</th>
+                                        <th>Role</th>
+                                        <th>Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="usersTableBody">
+                                    <!-- Data will be loaded here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Add/Edit User Modal -->
+    <div class="modal" id="userModal">
+        <div class="modal-background"></div>
+        <div class="modal-card">
+            <header class="modal-card-head">
+                <p class="modal-card-title" id="modalTitle">Tambah User</p>
+                <button class="delete" onclick="closeModal()"></button>
+            </header>
+            <section class="modal-card-body">
+                <form id="userForm">
+                    <input type="hidden" id="userId">
+                    <div class="form-grid">
+                        <div class="field">
+                            <label class="label">Nama Lengkap</label>
+                            <div class="control has-icons-left">
+                                <input class="input" type="text" id="userName" placeholder="Masukkan nama lengkap"
+                                    required>
+                                <span class="icon is-small is-left">
+                                    <i class="fas fa-user"></i>
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <label class="label">Email</label>
+                            <div class="control has-icons-left">
+                                <input class="input" type="email" id="userEmail" placeholder="Masukkan email" required>
+                                <span class="icon is-small is-left">
+                                    <i class="fas fa-envelope"></i>
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <label class="label">No. Telepon</label>
+                            <div class="control has-icons-left">
+                                <input class="input" type="tel" id="userPhone" placeholder="Masukkan no. telepon"
+                                    required>
+                                <span class="icon is-small is-left">
+                                    <i class="fas fa-phone"></i>
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <label class="label">Role</label>
+                            <div class="control has-icons-left">
+                                <div class="select is-fullwidth">
+                                    <select id="userRole" required>
+                                        <option value="">Pilih Role</option>
+                                        <option value="admin">Admin</option>
+                                        <option value="user">User</option>
+                                    </select>
+                                </div>
+                                <span class="icon is-small is-left">
+                                    <i class="fas fa-user-tag"></i>
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="field is-full">
+                            <label class="label">Alamat</label>
+                            <div class="control">
+                                <textarea class="textarea" id="userAddress" placeholder="Masukkan alamat lengkap"
+                                    rows="3"></textarea>
+                            </div>
+                        </div>
+
+                        <div class="field is-full" id="passwordField">
+                            <label class="label">Password</label>
+                            <div class="control has-icons-left">
+                                <input class="input" type="password" id="userPassword" placeholder="Masukkan password">
+                                <span class="icon is-small is-left">
+                                    <i class="fas fa-lock"></i>
+                                </span>
+                            </div>
+                            <p class="help" id="passwordHelp">Kosongkan jika tidak ingin mengubah password</p>
+                        </div>
+                    </div>
+                </form>
+            </section>
+            <footer class="modal-card-foot">
+                <button class="button is-success" onclick="saveUser()">
+                    <i class="fas fa-save"></i>
+                    <span id="saveButtonText">Simpan</span>
+                </button>
+                <button class="button" onclick="closeModal()">Batal</button>
+            </footer>
+        </div>
+    </div>
+
+    <!-- Notifications -->
+    <div id="notification" class="notification"
+        style="display: none; position: fixed; top: 20px; right: 20px; z-index: 9999; max-width: 400px;">
+        <button class="delete" onclick="hideNotification()"></button>
+        <span id="notificationText"></span>
+    </div>
+
+    <script src="../js/admin/listUser.js"></script>
+</body>
+
+</html>

@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kelola Transaksi - Admin Panel</title>
+    <title>Kelola Mobil - Admin Panel</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -66,36 +66,6 @@
             color: #27ae60;
         }
 
-        .status-pending {
-            background-color: #f39c12;
-            color: white;
-            padding: 0.25rem 0.5rem;
-            border-radius: 4px;
-            font-size: 0.75rem;
-        }
-
-        .payment-method {
-            font-weight: bold;
-            padding: 0.25rem 0.5rem;
-            border-radius: 4px;
-            font-size: 0.75rem;
-        }
-
-        .method-cash {
-            background-color: #2ecc71;
-            color: white;
-        }
-
-        .method-transfer {
-            background-color: #3498db;
-            color: white;
-        }
-
-        .method-credit {
-            background-color: #9b59b6;
-            color: white;
-        }
-
         @media screen and (max-width: 768px) {
             .form-grid {
                 grid-template-columns: 1fr;
@@ -120,7 +90,7 @@
 
         <div class="navbar-menu">
             <div class="navbar-start">
-                <a class="navbar-item" href="indexAdmin.html">
+                <a class="navbar-item" href="../indexAdmin.html">
                     <i class="fas fa-home"></i>
                     Dashboard
                 </a>
@@ -128,11 +98,11 @@
                     <i class="fas fa-users"></i>
                     User
                 </a>
-                <a class="navbar-item" href="listMobil.html">
+                <a class="navbar-item is-active" href="listMobil.html">
                     <i class="fas fa-car"></i>
                     Mobil
                 </a>
-                <a class="navbar-item is-active" href="listTransaksi.html">
+                <a class="navbar-item" href="listTransaksi.html">
                     <i class="fas fa-receipt"></i>
                     Transaksi
                 </a>
@@ -162,11 +132,17 @@
                             <div class="level-left">
                                 <div>
                                     <h1 class="title is-2">
-                                        <i class="fas fa-receipt"></i>
-                                        Kelola Transaksi
+                                        <i class="fas fa-car"></i>
+                                        Kelola Mobil
                                     </h1>
-                                    <p class="subtitle">Manage transaction records and details</p>
+                                    <p class="subtitle">Manage car inventory and details</p>
                                 </div>
+                            </div>
+                            <div class="level-right">
+                                <button class="button is-white is-outlined" onclick="openAddModal()">
+                                    <i class="fas fa-plus"></i>
+                                    <span>Tambah Mobil</span>
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -178,10 +154,10 @@
                         <div class="level-left">
                             <div class="field has-addons">
                                 <div class="control">
-                                    <input class="input" type="text" id="searchInput" placeholder="Cari transaksi...">
+                                    <input class="input" type="text" id="searchInput" placeholder="Cari mobil...">
                                 </div>
                                 <div class="control">
-                                    <button class="button is-info" onclick="searchTransaksi()">
+                                    <button class="button is-info" onclick="searchMobil()">
                                         <i class="fas fa-search"></i>
                                     </button>
                                 </div>
@@ -191,11 +167,8 @@
                             <div class="field">
                                 <div class="control">
                                     <div class="select">
-                                        <select id="paymentFilter" onchange="filterByPayment()">
-                                            <option value="">Semua Metode Pembayaran</option>
-                                            <option value="cash">Cash</option>
-                                            <option value="transfer">Transfer</option>
-                                            <option value="credit">Credit Card</option>
+                                        <select id="merekFilter" onchange="filterByMerek()">
+                                            <option value="">Semua Merek</option>
                                         </select>
                                     </div>
                                 </div>
@@ -207,34 +180,34 @@
                     <div id="loadingState" class="loading">
                         <div class="has-text-centered">
                             <i class="fas fa-spinner fa-spin fa-3x" style="color: #667eea;"></i>
-                            <p class="title is-4" style="margin-top: 1rem;">Memuat data transaksi...</p>
+                            <p class="title is-4" style="margin-top: 1rem;">Memuat data mobil...</p>
                         </div>
                     </div>
 
                     <!-- Empty State -->
                     <div id="emptyState" class="empty-state" style="display: none;">
                         <div class="has-text-centered">
-                            <i class="fas fa-receipt fa-4x" style="color: #ddd;"></i>
-                            <h3 class="title is-4">Tidak ada transaksi ditemukan</h3>
-                            <p class="subtitle">Belum ada transaksi atau ubah filter pencarian</p>
+                            <i class="fas fa-car-crash fa-4x" style="color: #ddd;"></i>
+                            <h3 class="title is-4">Tidak ada mobil ditemukan</h3>
+                            <p class="subtitle">Silakan tambah mobil baru atau ubah filter pencarian</p>
                         </div>
                     </div>
 
-                    <!-- Transaksi Table -->
-                    <div id="transaksiTable" style="display: none;">
+                    <!-- Mobil Table -->
+                    <div id="mobilTable" style="display: none;">
                         <div class="table-container">
                             <table class="table is-fullwidth is-striped is-hoverable">
                                 <thead>
                                     <tr>
                                         <th>ID</th>
-                                        <th>Nama Customer</th>
-                                        <th>Mobil</th>
-                                        <th>Metode Pembayaran</th>
-                                        <th>Tanggal Transaksi</th>
+                                        <th>Nama</th>
+                                        <th>Merek</th>
+                                        <th>Tahun Produksi</th>
+                                        <th>Harga</th>
                                         <th>Aksi</th>
                                     </tr>
                                 </thead>
-                                <tbody id="transaksiTableBody">
+                                <tbody id="mobilTableBody">
                                     <!-- Data will be loaded here -->
                                 </tbody>
                             </table>
@@ -245,65 +218,69 @@
         </div>
     </section>
 
-    <!-- Edit Transaksi Modal -->
-    <div class="modal" id="transaksiModal">
+    <!-- Add/Edit Mobil Modal -->
+    <div class="modal" id="mobilModal">
         <div class="modal-background"></div>
         <div class="modal-card">
             <header class="modal-card-head">
-                <p class="modal-card-title" id="modalTitle">Edit Transaksi</p>
+                <p class="modal-card-title" id="modalTitle">Tambah Mobil</p>
                 <button class="delete" onclick="closeModal()"></button>
             </header>
             <section class="modal-card-body">
-                <form id="transaksiForm">
-                    <input type="hidden" id="transaksiId">
+                <form id="mobilForm">
+                    <input type="hidden" id="mobilId">
                     <div class="form-grid">
-                        <div class="field is-full">
-                            <label class="label">Customer</label>
-                            <div class="control">
-                                <input class="input" type="text" id="customerName" readonly>
-                            </div>
-                        </div>
-
-                        <div class="field is-full">
-                            <label class="label">Mobil</label>
-                            <div class="control">
-                                <input class="input" type="text" id="mobilName" readonly>
-                            </div>
-                        </div>
-
                         <div class="field">
-                            <label class="label">Metode Pembayaran</label>
+                            <label class="label">Nama Mobil</label>
                             <div class="control has-icons-left">
-                                <div class="select is-fullwidth">
-                                    <select id="metodePembayaran" required>
-                                        <option value="">Pilih Metode Pembayaran</option>
-                                        <option value="cash">Cash</option>
-                                        <option value="transfer">Transfer Bank</option>
-                                        <option value="credit">Credit Card</option>
-                                    </select>
-                                </div>
+                                <input class="input" type="text" id="mobilNama" placeholder="Masukkan nama mobil"
+                                    required>
                                 <span class="icon is-small is-left">
-                                    <i class="fas fa-credit-card"></i>
+                                    <i class="fas fa-car"></i>
                                 </span>
                             </div>
                         </div>
 
                         <div class="field">
-                            <label class="label">Tanggal Transaksi</label>
+                            <label class="label">Merek</label>
                             <div class="control has-icons-left">
-                                <input class="input" type="datetime-local" id="tanggalTransaksi" required>
+                                <input class="input" type="text" id="mobilMerek" placeholder="Masukkan merek mobil"
+                                    required>
+                                <span class="icon is-small is-left">
+                                    <i class="fas fa-industry"></i>
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <label class="label">Tahun Produksi</label>
+                            <div class="control has-icons-left">
+                                <input class="input" type="number" id="mobilTahun" placeholder="Masukkan tahun produksi"
+                                    required min="1900" max="2025">
                                 <span class="icon is-small is-left">
                                     <i class="fas fa-calendar"></i>
                                 </span>
                             </div>
                         </div>
+
+                        <div class="field">
+                            <label class="label">Harga</label>
+                            <div class="control has-icons-left">
+                                <input class="input" type="number" id="mobilHarga" placeholder="Masukkan harga" required
+                                    min="0">
+                                <span class="icon is-small is-left">
+                                    <i class="fas fa-money-bill"></i>
+                                </span>
+                            </div>
+                            <p class="help">Masukkan harga dalam Rupiah</p>
+                        </div>
                     </div>
                 </form>
             </section>
             <footer class="modal-card-foot">
-                <button class="button is-success" onclick="saveTransaksi()">
+                <button class="button is-success" onclick="saveMobil()">
                     <i class="fas fa-save"></i>
-                    <span>Update</span>
+                    <span id="saveButtonText">Simpan</span>
                 </button>
                 <button class="button" onclick="closeModal()">Batal</button>
             </footer>
@@ -317,7 +294,7 @@
         <span id="notificationText"></span>
     </div>
 
-    <script src="../js/admin/listTransaksi.js"></script>
+    <script src="../js/admin/listMobil.js"></script>
 </body>
 
 </html>
