@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Dealer Mobil</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #00b894 0%, #00cec9 100%);
+            min-height: 100vh;
+        }
+
+        .navbar {
+            background: rgba(255, 255, 255, 0.95) !important;
+            backdrop-filter: blur(10px);
+        }
+
+        .hero {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .hero-body {
+            padding: 3rem 1.5rem;
+        }
+
+        .card {
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .menu-card {
+            height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .menu-card:hover {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .menu-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: #00b894;
+        }
+
+        .admin-section {
+            display: none;
+        }
+
+        .admin-section.show {
+            display: block;
+        }
+
+        .button.is-primary {
+            background: linear-gradient(135deg, #00b894 0%, #00cec9 100%);
+            border: none;
+        }
+
+        .footer {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .navbar-item.has-dropdown.is-hoverable .navbar-dropdown {
+            right: 0;
+            left: auto;
+            transform: translateX(-10px);
+            /* Geser 20px ke kiri, ubah sesuai kebutuhan */
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navbar -->
+    <nav class="navbar is-light" role="navigation">
+        <div class="navbar-brand">
+            <a class="navbar-item" href="indexUser.html" style="font-weight: bold; font-size: 1.2rem;">
+                <i class="fas fa-car" style="margin-right: 10px; color: #00b894;"></i>
+                Dealer Mobil
+            </a>
+        </div>
+
+        <div class="navbar-menu">
+            <div class="navbar-end">
+                <div class="navbar-item">
+                    <span id="userGreeting" class="has-text-weight-bold"></span>
+                </div>
+                <div class="navbar-item has-dropdown is-hoverable">
+                    <a class="navbar-link">
+                        <i class="fas fa-user"></i>
+                        <span id="userName"></span>
+                    </a>
+                    <div class="navbar-dropdown">
+                        <a class="navbar-item" href="profile.html">
+                            <i class="fas fa-user-edit"></i>
+                            Profil
+                        </a>
+                        <hr class="navbar-divider">
+                        <a class="navbar-item" id="logoutBtn">
+                            <i class="fas fa-sign-out-alt"></i>
+                            Logout
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-body">
+            <div class="container">
+                <h1 class="title has-text-white has-text-centered">
+                    <i class="fas fa-car"></i>
+                    Selamat Datang di Dealer Mobil
+                </h1>
+                <p class="subtitle has-text-white has-text-centered">
+                    Temukan mobil impian Anda dengan harga terbaik
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <section class="section">
+        <div class="container">
+            <!-- Menu Utama -->
+            <div class="columns is-multiline">
+                <!-- Menu untuk Semua User -->
+                <div class="column is-4">
+                    <div class="card">
+                        <a href="produk.html" class="menu-card">
+                            <div class="has-text-centered">
+                                <i class="fas fa-car menu-icon"></i>
+                                <h3 class="title is-4">Produk Mobil</h3>
+                                <p class="subtitle is-6">Lihat semua mobil yang tersedia</p>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="column is-4">
+                    <div class="card">
+                        <a href="profile.html" class="menu-card">
+                            <div class="has-text-centered">
+                                <i class="fas fa-user-circle menu-icon"></i>
+                                <h3 class="title is-4">Profil</h3>
+                                <p class="subtitle is-6">Kelola informasi akun Anda</p>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="column is-4">
+                    <div class="card">
+                        <a href="transaksiSaya.html" class="menu-card">
+                            <div class="has-text-centered">
+                                <i class="fas fa-history menu-icon"></i>
+                                <h3 class="title is-4">Transaksi Saya</h3>
+                                <p class="subtitle is-6">Lihat riwayat pembelian Anda</p>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="content has-text-centered has-text-white">
+            <p>
+                <strong class="has-text-white">Dealer Mobil</strong> - Sistem Manajemen Dealer Mobil
+            </p>
+            <p>
+                <i class="fas fa-phone"></i> +62 123 456 789 |
+                <i class="fas fa-envelope"></i> info@dealermobil.com
+            </p>
+        </div>
+    </footer>
+
+    <script src="js/indexUser.js"></script>
+</body>
+
+</html>

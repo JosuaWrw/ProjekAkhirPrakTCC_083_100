@@ -1,0 +1,128 @@
+GET http://localhost:3000/mobil
+
+###
+
+GET http://localhost:3000/mobil/3
+
+###
+
+POST http://localhost:3000/tambahmobil
+Content-Type: application/json
+
+{
+  "nama": "Toyota Avanza",
+  "merek": "Toyota",
+  "tahun_produksi": "2015",
+  "harga": "100 juta"
+}
+
+###
+
+PUT http://localhost:3000/updatemobil/2
+Content-Type: application/json
+
+{
+  "nama": "Toyota Avanza",
+  "merek": "Toyota",
+  "tahun_produksi": "2015",
+  "harga": "200 juta"
+}
+
+###
+
+DELETE http://localhost:3000/deletemobil/2
+
+###
+
+GET http://localhost:3000/token
+
+###
+
+GET http://localhost:3000/user
+
+###
+
+POST http://localhost:3000/register
+Content-Type: application/json
+
+{
+  "nama": "tes",
+  "email": "tes@tes.com",
+  "password": "tes333",
+  "no_telepon": "123456789",
+  "alamat": "tes",
+  "role": "user"
+}
+
+###
+
+POST http://localhost:3000/login
+Content-Type: application/json
+
+{
+  "email": "josua@tes.com",
+  "password": "tes1234"
+}
+
+###
+
+PUT http://localhost:3000/edit-user/1
+Content-Type: application/json
+
+{
+  "nama": "josua",
+  "email": "josua@tes.com",
+  "password": "tes1234",
+  "no_telepon": "085270792268",
+  "alamat": "Medan",
+  "role": "admin"
+}
+
+###
+
+DELETE http://localhost:3000/delete-user/3
+
+###
+
+DELETE http://localhost:3000/logout
+
+###
+
+GET http://localhost:3000/transaksiuser/1
+
+###
+
+GET http://localhost:3000/transaksi
+
+###
+
+GET http://localhost:3000/transaksi/1
+
+###
+
+POST http://localhost:3000/tambahtransaksi
+Content-Type: application/json
+
+{
+  "id_user": 2,
+  "id_mobil": 1,
+  "metode_pembayaran": "tunai"
+}
+
+###
+
+PUT http://localhost:3000/updatetransaksi/2
+Content-Type: application/json
+
+{
+  "id_user": 2,
+  "id_mobil": 1,
+  "metode_pembayaran": "kredit"
+}
+
+###
+
+DELETE http://localhost:3000/deletetransaksi/2
+
+###
+

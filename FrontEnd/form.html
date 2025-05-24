@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Form Pembelian - Dealer Mobil</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #00b894 0%, #00cec9 100%);
+            min-height: 100vh;
+        }
+
+        .navbar {
+            background: rgba(255, 255, 255, 0.95) !important;
+            backdrop-filter: blur(10px);
+        }
+
+        .purchase-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            margin: 2rem 0;
+            overflow: hidden;
+        }
+
+        .car-info {
+            background: linear-gradient(135deg, #00b894 0%, #00cec9 100%);
+            color: white;
+            padding: 2rem;
+        }
+
+        .car-details h2 {
+            color: white;
+            margin-bottom: 1rem;
+        }
+
+        .car-detail-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .car-detail-item:last-child {
+            border-bottom: none;
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .purchase-form {
+            padding: 2rem;
+        }
+
+        .button.is-primary {
+            background: linear-gradient(135deg, #00b894 0%, #00cec9 100%);
+            border: none;
+            font-weight: bold;
+            transition: transform 0.2s;
+        }
+
+        .button.is-primary:hover {
+            transform: translateY(-2px);
+        }
+
+        .field {
+            margin-bottom: 1.5rem;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navbar -->
+    <nav class="navbar is-light" role="navigation">
+        <div class="navbar-brand">
+            <a class="navbar-item" href="indexUser.html" style="font-weight: bold; font-size: 1.2rem;">
+                <i class="fas fa-car" style="margin-right: 10px; color: #00b894;"></i>
+                Dealer Mobil
+            </a>
+        </div>
+
+        <div class="navbar-menu">
+            <div class="navbar-start">
+                <a class="navbar-item" href="indexUser.html">
+                    <i class="fas fa-home"></i>
+                    Dashboard
+                </a>
+                <a class="navbar-item" href="produk.html">
+                    <i class="fas fa-car"></i>
+                    Produk
+                </a>
+            </div>
+            <div class="navbar-end">
+                <div class="navbar-item">
+                    <span id="userGreeting" class="has-text-weight-bold"></span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <section class="section">
+        <div class="container">
+            <div class="purchase-container">
+                <div class="columns is-gapless">
+                    <!-- Car Information (Left Side) -->
+                    <div class="column is-5">
+                        <div class="car-info">
+                            <div class="has-text-centered" style="margin-bottom: 2rem;">
+                                <i class="fas fa-car fa-4x" style="margin-bottom: 1rem;"></i>
+                                <h1 class="title is-3 has-text-white">Detail Mobil</h1>
+                            </div>
+
+                            <div class="car-details" id="carDetails">
+                                <!-- Car details will be loaded here -->
+                                <div class="car-detail-item">
+                                    <span><i class="fas fa-car"></i> Nama Mobil:</span>
+                                    <span id="carName">Loading...</span>
+                                </div>
+                                <div class="car-detail-item">
+                                    <span><i class="fas fa-tag"></i> Merek:</span>
+                                    <span id="carBrand">Loading...</span>
+                                </div>
+                                <div class="car-detail-item">
+                                    <span><i class="fas fa-calendar"></i> Tahun:</span>
+                                    <span id="carYear">Loading...</span>
+                                </div>
+                                <div class="car-detail-item">
+                                    <span><i class="fas fa-money-bill-wave"></i> Harga:</span>
+                                    <span id="carPrice">Loading...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Purchase Form (Right Side) -->
+                    <div class="column is-7">
+                        <div class="purchase-form">
+                            <h2 class="title is-3" style="color: #00b894; margin-bottom: 2rem;">
+                                <i class="fas fa-shopping-cart"></i>
+                                Form Pembelian
+                            </h2>
+
+                            <form id="purchaseForm">
+                                <div class="field">
+                                    <label class="label">Nama Lengkap</label>
+                                    <div class="control has-icons-left">
+                                        <input class="input" type="text" id="buyerName"
+                                            placeholder="Masukkan nama lengkap" required>
+                                        <span class="icon is-small is-left">
+                                            <i class="fas fa-user"></i>
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div class="field">
+                                    <label class="label">Email</label>
+                                    <div class="control has-icons-left">
+                                        <input class="input" type="email" id="buyerEmail"
+                                            placeholder="Masukkan alamat email" required>
+                                        <span class="icon is-small is-left">
+                                            <i class="fas fa-envelope"></i>
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div class="field">
+                                    <label class="label">No. Telepon</label>
+                                    <div class="control has-icons-left">
+                                        <input class="input" type="tel" id="buyerPhone"
+                                            placeholder="Masukkan nomor telepon" required>
+                                        <span class="icon is-small is-left">
+                                            <i class="fas fa-phone"></i>
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div class="field">
+                                    <label class="label">Metode Pembayaran</label>
+                                    <div class="control has-icons-left">
+                                        <div class="select is-fullwidth">
+                                            <select id="paymentMethod" required>
+                                                <option value="">Pilih metode pembayaran</option>
+                                                <option value="transfer_bank">Transfer Bank</option>
+                                                <option value="kredit">Kredit</option>
+                                                <option value="cash">Cash/Tunai</option>
+                                                <option value="leasing">Leasing</option>
+                                            </select>
+                                        </div>
+                                        <span class="icon is-small is-left">
+                                            <i class="fas fa-credit-card"></i>
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div class="field">
+                                    <div class="control">
+                                        <button class="button is-primary is-large is-fullwidth" type="submit">
+                                            <span class="icon">
+                                                <i class="fas fa-shopping-cart"></i>
+                                            </span>
+                                            <span>Beli Sekarang</span>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div id="errorMessage" class="notification is-danger" style="display: none;">
+                                    <button class="delete" onclick="hideError()"></button>
+                                    <span id="errorText"></span>
+                                </div>
+
+                                <div id="successMessage" class="notification is-success" style="display: none;">
+                                    <button class="delete" onclick="hideSuccess()"></button>
+                                    <span id="successText"></span>
+                                </div>
+
+                                <div id="loadingMessage" class="notification is-info" style="display: none;">
+                                    <span class="icon">
+                                        <i class="fas fa-spinner fa-spin"></i>
+                                    </span>
+                                    <span>Memproses pembelian...</span>
+                                </div>
+                            </form>
+
+                            <div class="has-text-centered" style="margin-top: 2rem;">
+                                <a href="produk.html" class="button is-light">
+                                    <span class="icon">
+                                        <i class="fas fa-arrow-left"></i>
+                                    </span>
+                                    <span>Kembali ke Produk</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script src="js/form.js"></script>
+</body>
+
+</html>

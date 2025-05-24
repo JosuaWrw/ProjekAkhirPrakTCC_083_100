@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profil - Dealer Mobil</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #00b894 0%, #00cec9 100%);
+            min-height: 100vh;
+        }
+
+        .navbar {
+            background: rgba(255, 255, 255, 0.95) !important;
+            backdrop-filter: blur(10px);
+        }
+
+        .profile-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            margin: 2rem 0;
+            padding: 2rem;
+        }
+
+        .profile-header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding: 2rem;
+            background: linear-gradient(135deg, #00b894 0%, #00cec9 100%);
+            border-radius: 15px;
+            color: white;
+        }
+
+        .profile-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            font-size: 3rem;
+        }
+
+        .profile-info {
+            background: white;
+            border-radius: 10px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .info-item:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            font-weight: bold;
+            color: #666;
+            display: flex;
+            align-items: center;
+        }
+
+        .info-label i {
+            margin-right: 10px;
+            color: #00b894;
+        }
+
+        .info-value {
+            color: #333;
+            font-weight: 500;
+        }
+
+        .role-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .role-admin {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .role-user {
+            background: #3498db;
+            color: white;
+        }
+
+        .button.is-primary {
+            background: linear-gradient(135deg, #00b894 0%, #00cec9 100%);
+            border: none;
+            font-weight: bold;
+            transition: transform 0.2s;
+        }
+
+        .button.is-primary:hover {
+            transform: translateY(-2px);
+        }
+
+        .edit-form {
+            display: none;
+            background: white;
+            border-radius: 10px;
+            padding: 2rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .edit-form.show {
+            display: block;
+        }
+
+        .navbar-item.has-dropdown.is-hoverable .navbar-dropdown {
+            right: 0;
+            left: auto;
+            transform: translateX(-20px);
+            /* Geser 20px ke kiri, ubah sesuai kebutuhan */
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navbar -->
+    <nav class="navbar is-light" role="navigation">
+        <div class="navbar-brand">
+            <a class="navbar-item" href="index.html" style="font-weight: bold; font-size: 1.2rem;">
+                <i class="fas fa-car" style="margin-right: 10px; color: #00b894;"></i>
+                Dealer Mobil
+            </a>
+        </div>
+
+        <div class="navbar-menu">
+            <div class="navbar-start">
+                <a class="navbar-item" href="index.html">
+                    <i class="fas fa-home"></i>
+                    Dashboard
+                </a>
+            </div>
+            <div class="navbar-end">
+                <div class="navbar-item">
+                    <span id="userGreeting" class="has-text-weight-bold"></span>
+                </div>
+                <div class="navbar-item has-dropdown is-hoverable">
+                    <a class="navbar-link">
+                        <i class="fas fa-user"></i>
+                        <span id="userName"></span>
+                    </a>
+                    <div class="navbar-dropdown">
+                        <a class="navbar-item" href="transaksiSaya.html">
+                            <i class="fas fa-history"></i>
+                            Transaksi Saya
+                        </a>
+                        <hr class="navbar-divider">
+                        <a class="navbar-item" id="logoutBtn">
+                            <i class="fas fa-sign-out-alt"></i>
+                            Logout
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <section class="section">
+        <div class="container">
+            <div class="profile-container">
+                <!-- Profile Header -->
+                <div class="profile-header">
+                    <div class="profile-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <h1 class="title is-2 has-text-white" id="profileName">Loading...</h1>
+                    <p class="subtitle has-text-white" id="profileEmail">Loading...</p>
+                    <span class="role-badge" id="profileRole">Loading...</span>
+                </div>
+
+                <!-- Profile Information -->
+                <div id="profileInfo" class="profile-info">
+                    <h2 class="title is-4" style="color: #00b894; margin-bottom: 2rem;">
+                        <i class="fas fa-user-circle"></i>
+                        Informasi Profil
+                    </h2>
+
+                    <div class="info-item">
+                        <div class="info-label">
+                            <i class="fas fa-user"></i>
+                            Nama Lengkap
+                        </div>
+                        <div class="info-value" id="displayName">Loading...</div>
+                    </div>
+
+                    <div class="info-item">
+                        <div class="info-label">
+                            <i class="fas fa-envelope"></i>
+                            Email
+                        </div>
+                        <div class="info-value" id="displayEmail">Loading...</div>
+                    </div>
+
+                    <div class="info-item">
+                        <div class="info-label">
+                            <i class="fas fa-phone"></i>
+                            No. Telepon
+                        </div>
+                        <div class="info-value" id="displayPhone">Loading...</div>
+                    </div>
+
+                    <div class="info-item">
+                        <div class="info-label">
+                            <i class="fas fa-map-marker-alt"></i>
+                            Alamat
+                        </div>
+                        <div class="info-value" id="displayAddress">Loading...</div>
+                    </div>
+
+                    <div class="info-item">
+                        <div class="info-label">
+                            <i class="fas fa-shield-alt"></i>
+                            Role
+                        </div>
+                        <div class="info-value">
+                            <span class="role-badge" id="displayRole">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Edit Form (Hidden by default) -->
+                <div id="editForm" class="edit-form">
+                    <h2 class="title is-4" style="color: #00b894; margin-bottom: 2rem;">
+                        <i class="fas fa-edit"></i>
+                        Edit Profil
+                    </h2>
+
+                    <form id="profileEditForm">
+                        <div class="columns">
+                            <div class="column is-6">
+                                <div class="field">
+                                    <label class="label">Nama Lengkap</label>
+                                    <div class="control has-icons-left">
+                                        <input class="input" type="text" id="editName" required>
+                                        <span class="icon is-small is-left">
+                                            <i class="fas fa-user"></i>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="column is-6">
+                                <div class="field">
+                                    <label class="label">Email</label>
+                                    <div class="control has-icons-left">
+                                        <input class="input" type="email" id="editEmail" required>
+                                        <span class="icon is-small is-left">
+                                            <i class="fas fa-envelope"></i>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="columns">
+                            <div class="column is-6">
+                                <div class="field">
+                                    <label class="label">No. Telepon</label>
+                                    <div class="control has-icons-left">
+                                        <input class="input" type="tel" id="editPhone" required>
+                                        <span class="icon is-small is-left">
+                                            <i class="fas fa-phone"></i>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="column is-6">
+                                <div class="field">
+                                    <label class="label">Alamat</label>
+                                    <div class="control">
+                                        <input class="input" type="text" id="editAddress" required>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="field is-grouped">
+                            <div class="control">
+                                <button class="button is-primary" type="submit">
+                                    <span class="icon">
+                                        <i class="fas fa-save"></i>
+                                    </span>
+                                    <span>Simpan Perubahan</span>
+                                </button>
+                            </div>
+                            <div class="control">
+                                <button class="button is-light" type="button" onclick="cancelEdit()">
+                                    <span class="icon">
+                                        <i class="fas fa-times"></i>
+                                    </span>
+                                    <span>Batal</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div id="errorMessage" class="notification is-danger" style="display: none; margin-top: 1rem;">
+                            <button class="delete" onclick="hideError()"></button>
+                            <span id="errorText"></span>
+                        </div>
+
+                        <div id="successMessage" class="notification is-success"
+                            style="display: none; margin-top: 1rem;">
+                            <button class="delete" onclick="hideSuccess()"></button>
+                            <span id="successText"></span>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="has-text-centered" style="margin-top: 2rem;">
+                    <button class="button is-primary is-large" id="editBtn" onclick="showEditForm()">
+                        <span class="icon">
+                            <i class="fas fa-edit"></i>
+                        </span>
+                        <span>Edit Profil</span>
+                    </button>
+
+                    <a href="transaksiSaya.html" class="button is-info is-large" style="margin-left: 1rem;">
+                        <span class="icon">
+                            <i class="fas fa-history"></i>
+                        </span>
+                        <span>Lihat Transaksi</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script src="js/profile.js"></script>
+</body>
+
+</html>

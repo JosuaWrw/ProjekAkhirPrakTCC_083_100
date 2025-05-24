@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - Dealer Mobil</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #00b894 0%, #00cec9 100%);
+            min-height: 100vh;
+        }
+
+        .register-container {
+            max-width: 500px;
+            margin: 0 auto;
+            padding-top: 3rem;
+            padding-bottom: 3rem;
+        }
+
+        .card {
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            border-radius: 15px 15px 0 0;
+        }
+
+        .card-header-title {
+            color: white;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .field {
+            margin-bottom: 1.5rem;
+        }
+
+        .button.is-primary {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            border: none;
+            font-weight: bold;
+            transition: transform 0.2s;
+        }
+
+        .button.is-primary:hover {
+            transform: translateY(-2px);
+        }
+
+        .login-link {
+            text-align: center;
+            margin-top: 1rem;
+        }
+
+        .login-link a {
+            color: #4facfe;
+            font-weight: bold;
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .logo i {
+            font-size: 3rem;
+            color: white;
+            margin-bottom: 0.5rem;
+        }
+
+        .logo h1 {
+            color: white;
+            font-size: 2rem;
+            font-weight: bold;
+            margin: 0;
+        }
+
+        .input:focus {
+            border-color: #4facfe;
+            box-shadow: 0 0 0 0.125em rgba(79, 172, 254, 0.25);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="register-container">
+            <div class="logo">
+                <i class="fas fa-car"></i>
+                <h1>Dealer Mobil</h1>
+            </div>
+
+            <div class="card">
+                <header class="card-header">
+                    <p class="card-header-title">
+                        <i class="fas fa-user-plus" style="margin-right: 10px;"></i>
+                        Daftar Akun Baru
+                    </p>
+                </header>
+
+                <div class="card-content">
+                    <form id="registerForm">
+                        <div class="field">
+                            <label class="label">Nama Lengkap</label>
+                            <div class="control has-icons-left">
+                                <input class="input" type="text" id="nama" placeholder="Masukkan nama lengkap Anda"
+                                    required>
+                                <span class="icon is-small is-left">
+                                    <i class="fas fa-user"></i>
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <label class="label">Email</label>
+                            <div class="control has-icons-left">
+                                <input class="input" type="email" id="email" placeholder="Masukkan email Anda" required>
+                                <span class="icon is-small is-left">
+                                    <i class="fas fa-envelope"></i>
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <label class="label">Password</label>
+                            <div class="control has-icons-left">
+                                <input class="input" type="password" id="password"
+                                    placeholder="Masukkan password (min. 6 karakter)" required minlength="6">
+                                <span class="icon is-small is-left">
+                                    <i class="fas fa-lock"></i>
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <label class="label">Konfirmasi Password</label>
+                            <div class="control has-icons-left">
+                                <input class="input" type="password" id="confirmPassword"
+                                    placeholder="Ulangi password Anda" required>
+                                <span class="icon is-small is-left">
+                                    <i class="fas fa-lock"></i>
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <label class="label">No. Telepon</label>
+                            <div class="control has-icons-left">
+                                <input class="input" type="tel" id="no_telepon"
+                                    placeholder="Masukkan nomor telepon Anda" required>
+                                <span class="icon is-small is-left">
+                                    <i class="fas fa-phone"></i>
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <label class="label">Alamat</label>
+                            <div class="control">
+                                <input class="input" type="text" id="alamat" placeholder="Masukkan alamat lengkap Anda"
+                                    required>
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <div class="control">
+                                <button class="button is-primary is-fullwidth" type="submit">
+                                    <span class="icon">
+                                        <i class="fas fa-user-plus"></i>
+                                    </span>
+                                    <span>Daftar Sekarang</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div id="errorMessage" class="notification is-danger" style="display: none;">
+                            <button class="delete" onclick="hideError()"></button>
+                            <span id="errorText"></span>
+                        </div>
+
+                        <div id="successMessage" class="notification is-success" style="display: none;">
+                            <button class="delete" onclick="hideSuccess()"></button>
+                            <span id="successText"></span>
+                        </div>
+
+                        <div id="loadingMessage" class="notification is-info" style="display: none;">
+                            <span class="icon">
+                                <i class="fas fa-spinner fa-spin"></i>
+                            </span>
+                            <span>Sedang memproses pendaftaran...</span>
+                        </div>
+                    </form>
+
+                    <div class="login-link">
+                        <p>Sudah punya akun? <a href="login.html">Masuk di sini</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/register.js"></script>
+</body>
+
+</html>
