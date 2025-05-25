@@ -47,7 +47,7 @@ async function updateUser(req, res) {
   try{
     const { nama, email, password, no_telepon, alamat } = req.body;
     let updatedData = {
-      nama, email, password, no_telepon, alamat
+      nama, email, password, no_telepon, alamat, role
     }; 
 
     if (password) {
