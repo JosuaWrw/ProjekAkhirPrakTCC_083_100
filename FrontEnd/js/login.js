@@ -1,5 +1,5 @@
 // login.js
-const API_BASE_URL = 'http://localhost:3000'; // Sesuaikan dengan port backend Anda
+const API_BASE_URL = 'https://dealer-project-935996462481.us-central1.run.app'; // Sesuaikan dengan port backend Anda
 
 document.addEventListener('DOMContentLoaded', function() {
     const loginForm = document.getElementById('loginForm');
