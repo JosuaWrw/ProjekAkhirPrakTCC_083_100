@@ -120,8 +120,8 @@ async function loginHandler(req, res){
               console.log("Mengirim cookie refreshToken:", refreshToken);
               res.cookie('refreshToken', refreshToken,{
                   httpOnly : true, //ngatur cross-site scripting, untuk penggunaan asli aktifkan karena bisa nyegah serangan fetch data dari website "document.cookies"
-                  sameSite : 'lax',  //ini ngatur domain yg request misal kalo strict cuman bisa akseske link dari dan menuju domain yg sama, lax itu bisa dari domain lain tapi cuman bisa get
-                  secure : false,
+                  sameSite : 'none',  //ini ngatur domain yg request misal kalo strict cuman bisa akseske link dari dan menuju domain yg sama, lax itu bisa dari domain lain tapi cuman bisa get
+                  secure : true, //ini ngatur apakah cookies bisa diakses dari https atau tidak, true itu hanya bisa diakses dari https
                   maxAge  : 24*60*60*1000,
               });
               res.status(200).json({

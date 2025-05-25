@@ -1,0 +1,47 @@
+substitutions:
+  _ENV: "gs://projekakhir-083-100/.env"
+
+steps:
+
+  # 1. Unduh .env dari bucket
+  - name: "gcr.io/cloud-builders/gsutil"
+    args: ["cp", "${_ENV}", ".env"]
+
+  # 1.5. Pindahkan .env ke direktori Backend
+  - name: "gcr.io/cloud-builders/gsutil"
+    entrypoint: bash
+    args:
+      - "-c"
+      - |
+        mv .env BackEnd/
+
+  # 2. Build Docker image
+  - name: "gcr.io/cloud-builders/docker"
+    args: ["build", "-t", "gcr.io/$PROJECT_ID/dealer-project", "."]
+    dir: "BackEnd"
+
+  # 3. Push image ke Container Registry
+  - name: "gcr.io/cloud-builders/docker"
+    args: ["push", "gcr.io/$PROJECT_ID/dealer-project"]
+
+  # 4. Deploy ke Cloud Run
+  - name: "gcr.io/cloud-builders/gcloud"
+    entrypoint: gcloud
+    args:
+      [
+        "run",
+        "deploy",
+        "dealer-project",
+        "--image",
+        "gcr.io/$PROJECT_ID/dealer-project",
+        "--timeout",
+        "1000s",
+        "--port",
+        "3000",
+        "--region",
+        "us-central1",
+        "--allow-unauthenticated",
+      ]
+
+options:
+  logging: CLOUD_LOGGING_ONLY
