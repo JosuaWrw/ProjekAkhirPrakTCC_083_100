@@ -20,7 +20,7 @@ async function checkAuthentication() {
     
     if (!accessToken || userData.role !== 'admin') {
         localStorage.clear();
-        window.location.href = 'login.html';
+        window.location.href = '../login.html';
         return;
     }
     
@@ -32,7 +32,7 @@ async function checkAuthentication() {
     } catch (error) {
         console.error('Authentication check failed:', error);
         localStorage.clear();
-        window.location.href = 'login.html';
+        window.location.href = '../login.html';
     }
 }
 
@@ -94,7 +94,7 @@ function setupLogout() {
             }
             
             localStorage.clear();
-            window.location.href = 'login.html';
+            window.location.href = '../login.html';
         }
     });
 }
@@ -448,7 +448,7 @@ async function makeAuthenticatedRequest(url, options = {}) {
             });
         } else {
             localStorage.clear();
-            window.location.href = 'login.html';
+            window.location.href = '../login.html';
             return null;
         }
     }
