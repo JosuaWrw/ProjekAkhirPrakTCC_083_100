@@ -45,7 +45,7 @@ async function createUser(req, res) {
 //Update User
 async function updateUser(req, res) {
   try{
-    const { nama, email, password, no_telepon, alamat } = req.body;
+    const { nama, email, password, no_telepon, alamat , role} = req.body;
     let updatedData = {
       nama, email, password, no_telepon, alamat, role
     }; 

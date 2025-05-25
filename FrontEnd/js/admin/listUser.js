@@ -147,14 +147,14 @@ function displayUsers(users) {
                 <td><span class="user-role ${roleClass}">${user.role || 'user'}</span></td>
                 <td>
                     <div class="action-buttons">
+                        <button class="button is-small is-primary" onclick="viewUser(${user.id})" title="View Details">
+                            <i class="fas fa-eye"></i>
+                        </button>
                         <button class="button is-small is-info" onclick="editUser(${user.id})" title="Edit">
                             <i class="fas fa-edit"></i>
                         </button>
                         <button class="button is-small is-danger" onclick="deleteUser(${user.id})" title="Delete">
                             <i class="fas fa-trash"></i>
-                        </button>
-                        <button class="button is-small is-link" onclick="viewUser(${user.id})" title="View Details">
-                            <i class="fas fa-eye"></i>
                         </button>
                     </div>
                 </td>
@@ -241,10 +241,13 @@ function openAddModal() {
 
 async function editUser(userId) {
     try {
+        console.log('Editing user with ID:', userId); // Debug log
+        
         const response = await makeAuthenticatedRequest(`${API_BASE_URL}/users/${userId}`);
         
         if (response && response.ok) {
             const user = await response.json();
+            console.log('User data loaded:', user); // Debug log
             
             isEditMode = true;
             document.getElementById('modalTitle').textContent = 'Edit User';
@@ -261,9 +264,12 @@ async function editUser(userId) {
             document.getElementById('userAddress').value = user.alamat || '';
             document.getElementById('userPassword').value = '';
             
+            console.log('Form populated with role:', user.role); // Debug log
+            
             // Show modal
             document.getElementById('userModal').classList.add('is-active');
         } else {
+            console.error('Failed to load user, response:', response.status); // Debug log
             throw new Error('User tidak ditemukan');
         }
     } catch (error) {
@@ -326,11 +332,18 @@ async function saveUser() {
     }
     
     const userId = document.getElementById('userId').value;
+    const roleValue = document.getElementById('userRole').value;
+    
+    console.log('Saving user...'); // Debug log
+    console.log('User ID:', userId); // Debug log
+    console.log('Is Edit Mode:', isEditMode); // Debug log
+    console.log('Selected Role:', roleValue); // Debug log
+        
     const userData = {
         nama: document.getElementById('userName').value.trim(),
         email: document.getElementById('userEmail').value.trim(),
         no_telepon: document.getElementById('userPhone').value.trim(),
-        role: document.getElementById('userRole').value,
+        role: roleValue, // Pastikan role diambil
         alamat: document.getElementById('userAddress').value.trim()
     };
     
@@ -339,11 +352,18 @@ async function saveUser() {
         userData.password = password;
     }
     
+    console.log('User data to be sent:', userData); // Debug log
+    
     try {
         let response;
+        let url;
         
         if (isEditMode && userId) {
-            response = await makeAuthenticatedRequest(`${API_BASE_URL}/edit-user/${userId}`, {
+            url = `${API_BASE_URL}/edit-user/${userId}`;
+            console.log('Making PUT request to:', url); // Debug log
+            console.log('Request payload:', JSON.stringify(userData, null, 2)); // Debug log
+            
+            response = await makeAuthenticatedRequest(url, {
                 method: 'PUT',
                 body: JSON.stringify(userData)
             });
@@ -352,20 +372,45 @@ async function saveUser() {
                 showNotification('Password wajib diisi untuk user baru', 'error');
                 return;
             }
-            response = await makeAuthenticatedRequest(`${API_BASE_URL}/register`, {
+            url = `${API_BASE_URL}/register`;
+            console.log('Making POST request to:', url); // Debug log
+            
+            response = await makeAuthenticatedRequest(url, {
                 method: 'POST',
                 body: JSON.stringify(userData)
             });
         }
         
+        console.log('Response status:', response?.status); // Debug log
+        console.log('Response ok:', response?.ok); // Debug log
+        
         if (response && response.ok) {
+            const responseData = await response.json();
+            console.log('Success response:', responseData); // Debug log
+            
             const message = isEditMode ? 'User berhasil diupdate' : 'User berhasil ditambahkan';
             showNotification(message, 'success');
             closeModal();
-            await loadUsers(); // Refresh data
+            
+            // Refresh data setelah berhasil update
+            console.log('Refreshing user data...'); // Debug log
+            await loadUsers();
         } else {
-            const errorData = await response.json().catch(() => ({}));
-            throw new Error(errorData.message || 'Gagal menyimpan user');
+            let errorMessage = 'Gagal menyimpan user';
+            
+            if (response) {
+                console.log('Error response status:', response.status); // Debug log
+                try {
+                    const errorData = await response.json();
+                    console.log('Error response data:', errorData); // Debug log
+                    errorMessage = errorData.message || errorData.msg || `HTTP ${response.status}`;
+                } catch (parseError) {
+                    console.log('Could not parse error response'); // Debug log
+                    errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+                }
+            }
+            
+            throw new Error(errorMessage);
         }
     } catch (error) {
         console.error('Error saving user:', error);
@@ -376,6 +421,7 @@ async function saveUser() {
 function closeModal() {
     document.getElementById('userModal').classList.remove('is-active');
     document.getElementById('userForm').reset();
+    isEditMode = false; // Reset edit mode
 }
 
 function showLoading() {
@@ -432,20 +478,28 @@ async function makeAuthenticatedRequest(url, options = {}) {
         ...options.headers
     };
     
+    console.log('Making authenticated request to:', url); // Debug log
+    console.log('Request headers:', headers); // Debug log
+    
     let response = await fetch(url, {
         ...options,
         headers
     });
     
+    console.log('Response received:', response.status, response.statusText); // Debug log
+    
     if (response.status === 401 || response.status === 403) {
+        console.log('Token expired, refreshing...'); // Debug log
         const refreshSuccess = await refreshToken();
         if (refreshSuccess) {
             accessToken = localStorage.getItem('accessToken');
             headers['Authorization'] = `Bearer ${accessToken}`;
+            console.log('Retrying with new token...'); // Debug log
             response = await fetch(url, {
                 ...options,
                 headers
             });
+            console.log('Retry response:', response.status, response.statusText); // Debug log
         } else {
             localStorage.clear();
             window.location.href = '../login.html';
