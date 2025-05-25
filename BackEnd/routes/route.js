@@ -33,9 +33,9 @@ router.get('/token', refreshToken);
 router.post('/login', loginHandler);
 router.delete('/logout', logout);
 router.post("/register", createUser);
-router.get("/user", getUsers);
+router.get("/user", verifyToken, getUsers);
 router.get("/users/:id", verifyToken, getUserById);
-router.put("/edit-user/:id", updateUser);
+router.put("/edit-user/:id", verifyToken, updateUser);
 router.delete("/delete-user/:id", verifyToken, deleteUser);
 
 // Mobil Routes
@@ -49,7 +49,7 @@ router.delete('/deletemobil/:id', deleteMobil);
 router.get('/transaksiuser/:id', verifyToken, getTransaksiUser);
 router.post('/tambahtransaksi', verifyToken, createTransaksi);
 router.get('/transaksi/:id', verifyToken, getTransaksiById);
-router.get('/transaksi', getTransaksi);
+router.get('/transaksi', verifyToken, getTransaksi);
 router.delete('/deletetransaksi/:id', verifyToken, deleteTransaksi);
 router.put('/updatetransaksi/:id', verifyToken, updateTransaksi);
 
