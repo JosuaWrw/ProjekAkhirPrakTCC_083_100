@@ -1,38 +1,54 @@
 // listTransaksi.js
-const API_BASE_URL = 'http://localhost:3000';
+const API_BASE_URL = 'http://localhost:3000'; // Sesuaikan dengan port backend Anda
 
 let allTransaksi = [];
 let filteredTransaksi = [];
-let isEditMode = false;
 
 document.addEventListener('DOMContentLoaded', function() {
+    // Check authentication
     checkAuthentication();
+    
+    // Load admin info
     loadAdminInfo();
+    
+    // Setup logout functionality
     setupLogout();
-    loadTransaksi();
-    setupSearch();
+    
+    // Load all transactions
+    loadAllTransaksi();
+    
+    // Setup modal functionality
     setupModal();
+    
+    // Setup search functionality
+    setupSearch();
 });
 
 async function checkAuthentication() {
     const accessToken = localStorage.getItem('accessToken');
-    const userData = JSON.parse(localStorage.getItem('userData') || '{}');
     
-    if (!accessToken || userData.role !== 'admin') {
-        localStorage.clear();
-        window.location.href = 'login.html';
+    if (!accessToken) {
+        window.location.href = '../login.html';
         return;
     }
     
     try {
         const response = await makeAuthenticatedRequest(`${API_BASE_URL}/user`);
         if (!response) {
+            return; // makeAuthenticatedRequest handles redirect
+        }
+        
+        // Check if user has admin role
+        const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+        if (userData.role !== 'admin') {
+            alert('Akses ditolak. Anda tidak memiliki hak admin.');
+            window.location.href = '../login.html';
             return;
         }
     } catch (error) {
         console.error('Authentication check failed:', error);
         localStorage.clear();
-        window.location.href = 'login.html';
+        window.location.href = '../login.html';
     }
 }
 
@@ -83,23 +99,21 @@ function setupLogout() {
     logoutBtn.addEventListener('click', async function(e) {
         e.preventDefault();
         
-        if (confirm('Apakah Anda yakin ingin logout?')) {
-            try {
-                await fetch(`${API_BASE_URL}/logout`, {
-                    method: 'DELETE',
-                    credentials: 'include'
-                });
-            } catch (error) {
-                console.error('Logout API call failed:', error);
-            }
-            
-            localStorage.clear();
-            window.location.href = 'login.html';
+        try {
+            await fetch(`${API_BASE_URL}/logout`, {
+                method: 'DELETE',
+                credentials: 'include'
+            });
+        } catch (error) {
+            console.error('Logout API call failed:', error);
         }
+        
+        localStorage.clear();
+        window.location.href = '../login.html';
     });
 }
 
-async function loadTransaksi() {
+async function loadAllTransaksi() {
     showLoading();
     
     try {
@@ -107,15 +121,33 @@ async function loadTransaksi() {
         
         if (response && response.ok) {
             const transaksi = await response.json();
-            allTransaksi = transaksi;
-            filteredTransaksi = transaksi;
-            displayTransaksi(transaksi);
+            
+            // Get detailed transaction data with user and mobil info
+            const detailedTransaksi = await Promise.all(
+                transaksi.map(async (t) => {
+                    try {
+                        const detailResponse = await makeAuthenticatedRequest(`${API_BASE_URL}/transaksi/${t.id}`);
+                        if (detailResponse && detailResponse.ok) {
+                            const detailData = await detailResponse.json();
+                            return Array.isArray(detailData) ? detailData[0] : detailData;
+                        }
+                        return t;
+                    } catch (error) {
+                        console.error(`Error loading detail for transaction ${t.id}:`, error);
+                        return t;
+                    }
+                })
+            );
+            
+            allTransaksi = detailedTransaksi;
+            filteredTransaksi = [...allTransaksi];
+            displayTransaksi(filteredTransaksi);
         } else {
-            throw new Error('Failed to load transaksi');
+            throw new Error('Failed to load transactions');
         }
     } catch (error) {
-        console.error('Error loading transaksi:', error);
-        showNotification('Gagal memuat data transaksi. Silakan refresh halaman.', 'error');
+        console.error('Error loading transactions:', error);
+        showError('Gagal memuat data transaksi. Silakan refresh halaman.');
     } finally {
         hideLoading();
     }
@@ -135,31 +167,38 @@ function displayTransaksi(transaksi) {
     emptyState.style.display = 'none';
     transaksiTable.style.display = 'block';
     
-    const transaksiHTML = transaksi.map((t, index) => {
-        const paymentClass = getPaymentClass(t.metode_pembayaran);
-        const tanggalFormatted = formatDate(t.tanggal_dipesan);
+    const transaksiHTML = transaksi.map((transaction) => {
+        const customerName = transaction.user ? transaction.user.nama : 'User tidak ditemukan';
+        const mobilName = transaction.mobil ? transaction.mobil.nama : 'Mobil tidak ditemukan';
+        const tanggal = new Date(transaction.tanggal_dipesan).toLocaleDateString('id-ID', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
         
-        // Handle data with or without includes - prioritize included data, fallback to ID
-        const customerName = t.user ? t.user.nama : `User ID: ${t.id_user}`;
-        const mobilName = t.mobil ? t.mobil.nama : `Mobil ID: ${t.id_mobil}`;
+        const metodePembayaran = transaction.metode_pembayaran || 'Tidak diketahui';
+        const paymentClass = getPaymentMethodClass(metodePembayaran);
         
         return `
             <tr>
-                <td>${t.id}</td>
+                <td>#${transaction.id}</td>
                 <td>${customerName}</td>
                 <td>${mobilName}</td>
-                <td><span class="payment-method ${paymentClass}">${formatPaymentMethod(t.metode_pembayaran)}</span></td>
-                <td>${tanggalFormatted}</td>
+                <td>
+                    <span class="payment-method ${paymentClass}">
+                        ${metodePembayaran.charAt(0).toUpperCase() + metodePembayaran.slice(1)}
+                    </span>
+                </td>
+                <td>${tanggal}</td>
                 <td>
                     <div class="action-buttons">
-                        <button class="button is-small is-info" onclick="editTransaksi(${t.id})" title="Edit">
+                        <button class="button is-small is-info" onclick="editTransaksi(${transaction.id})">
                             <i class="fas fa-edit"></i>
                         </button>
-                        <button class="button is-small is-danger" onclick="deleteTransaksi(${t.id})" title="Delete">
+                        <button class="button is-small is-danger" onclick="deleteTransaksi(${transaction.id})">
                             <i class="fas fa-trash"></i>
-                        </button>
-                        <button class="button is-small is-link" onclick="viewTransaksi(${t.id})" title="View Details">
-                            <i class="fas fa-eye"></i>
                         </button>
                     </div>
                 </td>
@@ -170,46 +209,27 @@ function displayTransaksi(transaksi) {
     tableBody.innerHTML = transaksiHTML;
 }
 
-function getPaymentClass(method) {
-    switch(method?.toLowerCase()) {
-        case 'cash': return 'method-cash';
-        case 'transfer': return 'method-transfer';
-        case 'credit': return 'method-credit';
-        default: return 'method-cash';
+function getPaymentMethodClass(method) {
+    switch(method.toLowerCase()) {
+        case 'cash':
+            return 'method-cash';
+        case 'transfer':
+            return 'method-transfer';
+        case 'credit':
+            return 'method-credit';
+        default:
+            return 'method-cash';
     }
-}
-
-function formatPaymentMethod(method) {
-    switch(method?.toLowerCase()) {
-        case 'cash': return 'Cash';
-        case 'transfer': return 'Transfer Bank';
-        case 'credit': return 'Credit Card';
-        default: return method || 'N/A';
-    }
-}
-
-// Remove the convertPriceToNumber and formatRupiah functions since we don't need them for transactions
-
-function formatDate(dateString) {
-    if (!dateString) return 'N/A';
-    const date = new Date(dateString);
-    return date.toLocaleDateString('id-ID', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-    });
 }
 
 function setupSearch() {
     const searchInput = document.getElementById('searchInput');
     
-    searchInput.addEventListener('input', function() {
-        const searchTerm = this.value.toLowerCase().trim();
-        filterTransaksi(searchTerm);
+    searchInput.addEventListener('input', function(e) {
+        searchTransaksi();
     });
     
+    // Enter key search
     searchInput.addEventListener('keypress', function(e) {
         if (e.key === 'Enter') {
             searchTransaksi();
@@ -218,26 +238,21 @@ function setupSearch() {
 }
 
 function searchTransaksi() {
-    const searchInput = document.getElementById('searchInput');
-    const searchTerm = searchInput.value.toLowerCase().trim();
-    filterTransaksi(searchTerm);
-}
-
-function filterTransaksi(searchTerm = '') {
-    const paymentFilter = document.getElementById('paymentFilter').value;
+    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+    const paymentFilter = document.getElementById('paymentFilter').value.toLowerCase();
     
-    filteredTransaksi = allTransaksi.filter(transaksi => {
-        // Get names with fallback to ID
-        const customerName = transaksi.user ? transaksi.user.nama : `User ID: ${transaksi.id_user}`;
-        const mobilName = transaksi.mobil ? transaksi.mobil.nama : `Mobil ID: ${transaksi.id_mobil}`;
+    filteredTransaksi = allTransaksi.filter(transaction => {
+        const customerName = transaction.user ? transaction.user.nama.toLowerCase() : '';
+        const mobilName = transaction.mobil ? transaction.mobil.nama.toLowerCase() : '';
+        const transactionId = transaction.id.toString();
+        const metodePembayaran = transaction.metode_pembayaran ? transaction.metode_pembayaran.toLowerCase() : '';
         
         const matchesSearch = searchTerm === '' || 
-            customerName.toLowerCase().includes(searchTerm) ||
-            mobilName.toLowerCase().includes(searchTerm) ||
-            (transaksi.metode_pembayaran && transaksi.metode_pembayaran.toLowerCase().includes(searchTerm)) ||
-            transaksi.id.toString().includes(searchTerm);
+            customerName.includes(searchTerm) ||
+            mobilName.includes(searchTerm) ||
+            transactionId.includes(searchTerm);
             
-        const matchesPayment = paymentFilter === '' || transaksi.metode_pembayaran === paymentFilter;
+        const matchesPayment = paymentFilter === '' || metodePembayaran === paymentFilter;
         
         return matchesSearch && matchesPayment;
     });
@@ -246,9 +261,98 @@ function filterTransaksi(searchTerm = '') {
 }
 
 function filterByPayment() {
-    const searchInput = document.getElementById('searchInput');
-    const searchTerm = searchInput.value.toLowerCase().trim();
-    filterTransaksi(searchTerm);
+    searchTransaksi(); // Reuse search function with filter
+}
+
+async function editTransaksi(transaksiId) {
+    try {
+        const response = await makeAuthenticatedRequest(`${API_BASE_URL}/transaksi/${transaksiId}`);
+        
+        if (response && response.ok) {
+            const transaksiData = await response.json();
+            const transaction = Array.isArray(transaksiData) ? transaksiData[0] : transaksiData;
+            
+            if (transaction) {
+                populateEditForm(transaction);
+                openModal();
+            } else {
+                alert('Data transaksi tidak ditemukan');
+            }
+        } else {
+            throw new Error('Failed to load transaction data');
+        }
+    } catch (error) {
+        console.error('Error loading transaction data:', error);
+        alert('Gagal memuat data transaksi');
+    }
+}
+
+function populateEditForm(transaction) {
+    document.getElementById('transaksiId').value = transaction.id;
+    document.getElementById('customerName').value = transaction.user ? transaction.user.nama : 'User tidak ditemukan';
+    document.getElementById('mobilName').value = transaction.mobil ? transaction.mobil.nama : 'Mobil tidak ditemukan';
+    document.getElementById('metodePembayaran').value = transaction.metode_pembayaran || '';
+    
+    // Format tanggal untuk input datetime-local
+    const tanggal = new Date(transaction.tanggal_dipesan);
+    const formatTanggal = tanggal.toISOString().slice(0, 16);
+    document.getElementById('tanggalTransaksi').value = formatTanggal;
+}
+
+async function saveTransaksi() {
+    const transaksiId = document.getElementById('transaksiId').value;
+    const metodePembayaran = document.getElementById('metodePembayaran').value;
+    const tanggalTransaksi = document.getElementById('tanggalTransaksi').value;
+    
+    if (!metodePembayaran || !tanggalTransaksi) {
+        showNotification('Mohon lengkapi semua field yang diperlukan', 'is-warning');
+        return;
+    }
+    
+    const updateData = {
+        metode_pembayaran: metodePembayaran,
+        tanggal_dipesan: new Date(tanggalTransaksi).toISOString()
+    };
+    
+    try {
+        const response = await makeAuthenticatedRequest(`${API_BASE_URL}/updatetransaksi/${transaksiId}`, {
+            method: 'PUT',
+            body: JSON.stringify(updateData)
+        });
+        
+        if (response && response.ok) {
+            showNotification('Transaksi berhasil diperbarui!', 'is-success');
+            closeModal();
+            loadAllTransaksi(); // Reload data
+        } else {
+            throw new Error('Failed to update transaction');
+        }
+    } catch (error) {
+        console.error('Error updating transaction:', error);
+        showNotification('Gagal memperbarui transaksi', 'is-danger');
+    }
+}
+
+async function deleteTransaksi(transaksiId) {
+    if (!confirm('Apakah Anda yakin ingin menghapus transaksi ini?')) {
+        return;
+    }
+    
+    try {
+        const response = await makeAuthenticatedRequest(`${API_BASE_URL}/deletetransaksi/${transaksiId}`, {
+            method: 'DELETE'
+        });
+        
+        if (response && response.ok) {
+            showNotification('Transaksi berhasil dihapus!', 'is-success');
+            loadAllTransaksi(); // Reload data
+        } else {
+            throw new Error('Failed to delete transaction');
+        }
+    } catch (error) {
+        console.error('Error deleting transaction:', error);
+        showNotification('Gagal menghapus transaksi', 'is-danger');
+    }
 }
 
 function setupModal() {
@@ -259,6 +363,7 @@ function setupModal() {
         button.addEventListener('click', closeModal);
     });
     
+    // Close modal with ESC key
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') {
             closeModal();
@@ -266,160 +371,16 @@ function setupModal() {
     });
 }
 
-async function editTransaksi(transaksiId) {
-    try {
-        const response = await makeAuthenticatedRequest(`${API_BASE_URL}/transaksi/${transaksiId}`);
-        
-        if (response && response.ok) {
-            const transaksiData = await response.json();
-            // The API returns an array, so we take the first element
-            const transaksi = Array.isArray(transaksiData) ? transaksiData[0] : transaksiData;
-            
-            if (!transaksi) {
-                throw new Error('Transaksi tidak ditemukan');
-            }
-            
-            isEditMode = true;
-            document.getElementById('modalTitle').textContent = 'Edit Transaksi';
-            
-            // Fill form with transaksi data
-            document.getElementById('transaksiId').value = transaksi.id;
-            document.getElementById('customerName').value = transaksi.user ? transaksi.user.nama : `User ID: ${transaksi.id_user}`;
-            document.getElementById('mobilName').value = transaksi.mobil ? transaksi.mobil.nama : `Mobil ID: ${transaksi.id_mobil}`;
-            document.getElementById('metodePembayaran').value = transaksi.metode_pembayaran || '';
-            
-            // Format date for datetime-local input
-            if (transaksi.tanggal_dipesan) {
-                const date = new Date(transaksi.tanggal_dipesan);
-                const formattedDate = date.toISOString().slice(0, 16);
-                document.getElementById('tanggalTransaksi').value = formattedDate;
-            }
-            
-            // Show modal
-            document.getElementById('transaksiModal').classList.add('is-active');
-        } else {
-            throw new Error('Transaksi tidak ditemukan');
-        }
-    } catch (error) {
-        console.error('Error loading transaksi:', error);
-        showNotification('Gagal memuat data transaksi', 'error');
-    }
-}
-
-async function deleteTransaksi(transaksiId) {
-    const transaksi = allTransaksi.find(t => t.id === transaksiId);
-    const customerName = transaksi && transaksi.user ? transaksi.user.nama : 'Unknown';
-    
-    if (confirm(`Apakah Anda yakin ingin menghapus transaksi dari "${customerName}"?`)) {
-        try {
-            const response = await makeAuthenticatedRequest(`${API_BASE_URL}/deletetransaksi/${transaksiId}`, {
-                method: 'DELETE'
-            });
-            
-            if (response && response.ok) {
-                showNotification('Transaksi berhasil dihapus', 'success');
-                await loadTransaksi(); // Refresh data
-            } else {
-                throw new Error('Gagal menghapus transaksi');
-            }
-        } catch (error) {
-            console.error('Error deleting transaksi:', error);
-            showNotification('Gagal menghapus transaksi', 'error');
-        }
-    }
-}
-
-async function viewTransaksi(transaksiId) {
-    try {
-        const response = await makeAuthenticatedRequest(`${API_BASE_URL}/transaksi/${transaksiId}`);
-        
-        if (response && response.ok) {
-            const transaksiData = await response.json();
-            // The API returns an array, so we take the first element
-            const transaksi = Array.isArray(transaksiData) ? transaksiData[0] : transaksiData;
-            
-            if (transaksi) {
-                showTransaksiDetail(transaksi);
-            } else {
-                showNotification('Detail transaksi tidak ditemukan', 'error');
-            }
-        } else {
-            throw new Error('Failed to load transaction detail');
-        }
-    } catch (error) {
-        console.error('Error loading transaction detail:', error);
-        showNotification('Gagal memuat detail transaksi', 'error');
-    }
-}
-
-function showTransaksiDetail(transaksi) {
-    const customerName = transaksi.user ? transaksi.user.nama : `User ID: ${transaksi.id_user}`;
-    const customerPhone = transaksi.user ? transaksi.user.no_telepon : 'N/A';
-    const customerAddress = transaksi.user ? transaksi.user.alamat : 'N/A';
-    const mobilName = transaksi.mobil ? transaksi.mobil.nama : `Mobil ID: ${transaksi.id_mobil}`;
-    const mobilMerek = transaksi.mobil ? transaksi.mobil.merek : 'N/A';
-    const tanggalFormatted = formatDate(transaksi.tanggal_dipesan);
-    
-    const transaksiInfo = `
-Detail Transaksi:
-
-ID Transaksi: ${transaksi.id}
-ID User: ${transaksi.id_user}
-ID Mobil: ${transaksi.id_mobil}
-
-=== INFORMASI CUSTOMER ===
-Nama: ${customerName}
-No. Telepon: ${customerPhone}
-Alamat: ${customerAddress}
-
-=== INFORMASI MOBIL ===
-Nama Mobil: ${mobilName}
-Merek: ${mobilMerek}
-
-=== INFORMASI TRANSAKSI ===
-Metode Pembayaran: ${formatPaymentMethod(transaksi.metode_pembayaran)}
-Tanggal Transaksi: ${tanggalFormatted}
-    `;
-    alert(transaksiInfo);
-}
-
-async function saveTransaksi() {
-    const form = document.getElementById('transaksiForm');
-    
-    if (!form.checkValidity()) {
-        form.reportValidity();
-        return;
-    }
-    
-    const transaksiId = document.getElementById('transaksiId').value;
-    const transaksiData = {
-        metode_pembayaran: document.getElementById('metodePembayaran').value,
-        tanggal_dipesan: document.getElementById('tanggalTransaksi').value
-    };
-    
-    try {
-        const response = await makeAuthenticatedRequest(`${API_BASE_URL}/updatetransaksi/${transaksiId}`, {
-            method: 'PUT',
-            body: JSON.stringify(transaksiData)
-        });
-        
-        if (response && response.ok) {
-            showNotification('Transaksi berhasil diupdate', 'success');
-            closeModal();
-            await loadTransaksi(); // Refresh data
-        } else {
-            const errorData = await response.json().catch(() => ({}));
-            throw new Error(errorData.message || 'Gagal menyimpan transaksi');
-        }
-    } catch (error) {
-        console.error('Error saving transaksi:', error);
-        showNotification(error.message || 'Gagal menyimpan transaksi', 'error');
-    }
+function openModal() {
+    const modal = document.getElementById('transaksiModal');
+    modal.classList.add('is-active');
+    document.body.classList.add('modal-open');
 }
 
 function closeModal() {
-    document.getElementById('transaksiModal').classList.remove('is-active');
-    document.getElementById('transaksiForm').reset();
+    const modal = document.getElementById('transaksiModal');
+    modal.classList.remove('is-active');
+    document.body.classList.remove('modal-open');
 }
 
 function showLoading() {
@@ -432,27 +393,20 @@ function hideLoading() {
     document.getElementById('loadingState').style.display = 'none';
 }
 
-function showNotification(message, type = 'info') {
+function showError(message) {
+    hideLoading();
+    alert(message);
+}
+
+function showNotification(message, type = 'is-info') {
     const notification = document.getElementById('notification');
     const notificationText = document.getElementById('notificationText');
     
     // Remove existing classes
-    notification.classList.remove('is-success', 'is-danger', 'is-warning', 'is-info');
+    notification.className = 'notification';
     
-    // Add appropriate class based on type
-    switch(type) {
-        case 'success':
-            notification.classList.add('is-success');
-            break;
-        case 'error':
-            notification.classList.add('is-danger');
-            break;
-        case 'warning':
-            notification.classList.add('is-warning');
-            break;
-        default:
-            notification.classList.add('is-info');
-    }
+    // Add new type class
+    notification.classList.add(type);
     
     notificationText.textContent = message;
     notification.style.display = 'block';
@@ -464,9 +418,11 @@ function showNotification(message, type = 'info') {
 }
 
 function hideNotification() {
-    document.getElementById('notification').style.display = 'none';
+    const notification = document.getElementById('notification');
+    notification.style.display = 'none';
 }
 
+// Utility function to make authenticated API calls
 async function makeAuthenticatedRequest(url, options = {}) {
     let accessToken = localStorage.getItem('accessToken');
     
@@ -492,7 +448,7 @@ async function makeAuthenticatedRequest(url, options = {}) {
             });
         } else {
             localStorage.clear();
-            window.location.href = 'login.html';
+            window.location.href = '../login.html';
             return null;
         }
     }
